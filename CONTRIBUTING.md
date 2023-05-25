@@ -32,4 +32,4 @@ Scan through our [existing issues](https://github.com/pwahane/bhankol-platform/i
 
 ### Your PR is merged!
 
-Congratulations :tada::tada: The GitHub team thanks you :sparkles:.
+Congratulations :tada::tada::sparkles:.
