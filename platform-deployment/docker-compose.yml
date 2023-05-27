@@ -1,0 +1,109 @@
+version: '3'
+services:
+
+  portainer:
+    image: portainer/portainer:latest
+    container_name: portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - "dataPortainer:/data"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - janusGraphEnvNetwork
+
+  # janusgraph:
+  #   image: janusgraph/janusgraph:0.5
+  #   container_name: janusgraph
+  #   environment:
+  #     - JANUS_PROPS_TEMPLATE=cassandra-es
+  #   depends_on:
+  #     - cassandra
+  #     - elasticsearch
+  #   ports:
+  #     - "8182:8182"
+  #   volumes:
+  #     - "./janusConf:/etc/opt/janusgraph:ro"
+  #   networks:
+  #     - janusGraphEnvNetwork
+  
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+  #   container_name: elasticsearch
+  #   environment:
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - "http.host=0.0.0.0"
+  #     - "transport.host=127.0.0.1"
+  #   ports:
+  #     - "9200:9200"
+  #   volumes:
+  #     - "dataElasticsearch:/usr/share/elasticsearch/data"
+  #     - "./elasticConf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+  #   networks:
+  #     - janusGraphEnvNetwork
+  
+  # cassandra:
+  #   image: cassandra:latest
+  #   container_name: cassandra
+  #   environment:
+  #     - CASSANDRA_START_RPC=true
+  #   ports:
+  #     - "7001:7000"
+  #     - "9042:9042"
+  #     - "9160:9160"
+  #   volumes:
+  #     - "dataCassandra:/var/lib/cassandra"
+  #   networks:
+  #     - janusGraphEnvNetwork
+
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - "./neo4jConf:/conf"
+    networks:
+      - janusGraphEnvNetwork
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # kafka-manager:
+  #   image: hlebalbau/kafka-manager:stable
+  #   container_name: kafka-manager
+  #   ports:
+  #     - 9001:9000
+  #   environment:
+  #     ZK_HOSTS: zookeeper:2181
+
+networks:
+  janusGraphEnvNetwork:
+    driver: bridge
+
+volumes:
+  dataPortainer:
+  dataCassandra:
+  dataElasticsearch:
